@@ -1,0 +1,10 @@
+# Copy to .dev.vars (never commit .dev.vars). Wrangler loads this for Pages Functions + local Worker.
+# Apps Script web app URL — must match: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
+APPS_SCRIPT_URL=
+
+# Optional: comma-separated origins for CORS (Worker).
+# Leave unset for same-origin production. Use * only in local dev.
+# ALLOWED_ORIGINS=https://www.example.com,https://example.com
+
+# Optional Turnstile (Worker secret + site key on frontend)
+# TURNSTILE_SECRET_KEY=

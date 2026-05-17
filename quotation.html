@@ -1,0 +1,303 @@
+<!doctype html>
+<!--
+Page maintenance guide:
+- Change the wizard sections to alter the visible quotation steps.
+- Change `script.js` when quote math, submission payload, save behavior, or PDF behavior needs to change.
+- Change the testimonial/footer sections to update supporting conversion content.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Get a professional rooftop solar quotation with net payable and PDF breakdown from Vaibhav Solar Solution." />
+    <meta name="keywords" content="solar installation India, rooftop solar system, solar panel price India, solar subsidy India, residential solar system, commercial solar EPC, Vaibhav Solar Solution" />
+    <title>Vaibhav Solar Solutions - Get Quote</title>
+    <link rel="icon" type="image/png" href="brand-logo.png" />
+    <link rel="apple-touch-icon" href="brand-logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  </head>
+  <body>
+        <!-- Shared header: changing links or logo here affects top-level navigation for this page. -->
+    <header class="topbar">
+      <div class="container nav">
+        <a href="index.html" class="logo"><img src="brand-logo.png" alt="Vaibhav Solar Solutions logo" /><span class="brand-name"><span class="brand-title">Vaibhav Solar Solutions</span><span class="brand-subtitle">Powered by Vaibhav Traders</span></span></a>
+        <nav>
+          <a href="index.html">Home</a>
+          <a href="calculator.html">ROI Calculator</a>
+          <a href="quotation.html">Get Quote</a>
+          <a href="services.html">Services</a>
+          <a href="about.html">About</a>
+          <a href="faq.html">FAQ</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+        <!-- Quotation hero: change the page headline and intro here. -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Get Your Free Solar Quote</h1>
+        <p class="lead">Get a personalized solar energy quotation in minutes. Fill out the details below.</p>
+      </div>
+    </section>
+
+        <!-- Quote wizard: edit step labels, visible forms, and page flow markup here. -->
+    <main class="container wizard-wrap" id="quote">
+      <div class="wizard-head">
+        <h2>Instant Quotation Generator</h2>
+      </div>
+      <ol class="stepper" id="stepper">
+        <li class="active">1. Details</li>
+        <li>2. Plant Size</li>
+        <li>3. Equipment</li>
+        <li>4. Quotation</li>
+      </ol>
+
+      <section class="card step-page active" data-step="1">
+        <h3>Step 1 - Customer & Site Details</h3>
+        <p class="muted step-note">This is a <strong>4-step guided quote</strong>. Complete each step in order; your entries are saved as you go. Leaving the page mid-quote may show a confirmation so your details are not lost.</p>
+        <div class="two-col">
+          <div>
+            <label for="customerName">Name</label>
+            <input id="customerName" placeholder="Customer name" />
+          </div>
+          <div>
+            <label for="customerPhone">Phone</label>
+            <input id="customerPhone" placeholder="Phone number" />
+          </div>
+          <div>
+            <label for="wizardMonthlyBill">Monthly Electricity Bill (INR)</label>
+            <input id="wizardMonthlyBill" type="number" min="500" placeholder="e.g. 3000" />
+          </div>
+          <div>
+            <label for="wizardState">Location / State</label>
+            <input id="wizardState" list="stateList" placeholder="Type or select state" autocomplete="off" />
+            <datalist id="stateList">
+              <option>Madhya Pradesh</option>
+              <option>Andaman and Nicobar Islands</option>
+              <option>Andhra Pradesh</option>
+              <option>Arunachal Pradesh</option>
+              <option>Assam</option>
+              <option>Bihar</option>
+              <option>Chandigarh</option>
+              <option>Chhattisgarh</option>
+              <option>Dadra and Nagar Haveli and Daman and Diu</option>
+              <option>Delhi</option>
+              <option>Goa</option>
+              <option>Gujarat</option>
+              <option>Haryana</option>
+              <option>Himachal Pradesh</option>
+              <option>Jammu and Kashmir</option>
+              <option>Jharkhand</option>
+              <option>Karnataka</option>
+              <option>Kerala</option>
+              <option>Ladakh</option>
+              <option>Lakshadweep</option>
+              <option>Maharashtra</option>
+              <option>Manipur</option>
+              <option>Meghalaya</option>
+              <option>Mizoram</option>
+              <option>Nagaland</option>
+              <option>Odisha</option>
+              <option>Puducherry</option>
+              <option>Punjab</option>
+              <option>Rajasthan</option>
+              <option>Sikkim</option>
+              <option>Tamil Nadu</option>
+              <option>Telangana</option>
+              <option>Tripura</option>
+              <option>Uttar Pradesh</option>
+              <option>Uttarakhand</option>
+              <option>West Bengal</option>
+            </datalist>
+          </div>
+          <div>
+            <label for="wizardCity">City</label>
+            <input id="wizardCity" type="text" placeholder="e.g. Bhopal" />
+          </div>
+          <div>
+            <label for="propertyType">Property Type</label>
+            <select id="propertyType">
+              <option value="">Select property type</option>
+              <option>Residential</option>
+              <option>Commercial</option>
+              <option>Industrial</option>
+            </select>
+          </div>
+          <div>
+            <label for="customerEmail">Email</label>
+            <input id="customerEmail" type="email" placeholder="Email address" />
+          </div>
+          <div>
+            <label for="customerLocation">Address</label>
+            <input id="customerLocation" placeholder="Complete address" />
+          </div>
+        </div>
+        <div class="actions"><button class="btn btn-primary" id="toStep2" type="button">Next: Select Plant Size</button></div>
+      </section>
+
+      <section class="card step-page" data-step="2">
+        <h3>Step 2 - Choose Solar Plant Size</h3>
+        <p class="muted step-note">Tap one plant capacity below to continue. You must complete each step in order - use <strong>Back</strong> or the step numbers above to return without losing saved details.</p>
+        <div class="option-grid" id="plantOptions"></div>
+        <div class="actions">
+          <button class="btn btn-secondary back-btn" type="button">Back</button>
+        </div>
+      </section>
+
+      <section class="card step-page" data-step="3">
+        <h3>Step 3 - Select Inverter, Panel and Kit</h3>
+        <p class="muted step-note"><strong>Stay in the quote flow:</strong> finish this step, then review and download in step 4. If you use the top menu to open another page while your quote is in progress, the site will ask you to confirm so details are not lost.</p>
+        <p class="muted step-note">Choose <strong>Inverter</strong> first, then <strong>Solar Panel</strong>, or select a complete <strong>Solar Kit</strong>. Kit selection prepares the quotation automatically, while separate brand selection opens the quotation after inverter and panel are both selected.</p>
+        <div class="equipment-layout">
+          <div class="card equipment-card">
+            <label for="inverterSelector">Select Inverter Brand</label>
+            <div id="inverterSelector"></div>
+            <div id="inverterOtherWrap" class="other-input-wrap hidden">
+              <label for="inverterOtherInput">Custom inverter brand</label>
+              <input id="inverterOtherInput" type="text" placeholder="Enter inverter brand name" />
+            </div>
+          </div>
+          <div class="card equipment-card">
+            <label for="panelSelector">Select Solar Panel Brand</label>
+            <div id="panelSelector"></div>
+            <div id="panelOtherWrap" class="other-input-wrap hidden">
+              <label for="panelOtherInput">Custom solar panel brand</label>
+              <input id="panelOtherInput" type="text" placeholder="Enter solar panel brand name" />
+            </div>
+          </div>
+          <div class="card equipment-card">
+            <label for="kitSelector">Select Solar Kit</label>
+            <div id="kitSelector"></div>
+            <p class="muted selector-help">Kit selection sets the recommended project package directly.</p>
+          </div>
+        </div>
+        <div class="selection-note" id="autoSelectionNote"></div>
+        <div class="actions">
+          <button class="btn btn-secondary back-btn" type="button">Back</button>
+        </div>
+      </section>
+
+      <section class="card step-page" data-step="4">
+        <h3>Step 4 - Quotation Summary</h3>
+        <p class="muted step-note">Review all sections, then download. Use <strong>Back</strong> if you need to change plant size or equipment.</p>
+        <p class="muted step-note">Please review the quotation summary below. Click <strong>Download PDF</strong> to complete the quotation flow and send the quotation directly to the team.</p>
+        <div id="quotePreview"></div>
+        <div id="saveSummary"></div>
+        <article class="download-sheet pdf-render-sheet" id="downloadSheet">
+          <div class="sheet-header invoice-header">
+            <div class="invoice-brand">
+              <img src="brand-logo.png" alt="Vaibhav Solar Solutions logo" class="invoice-logo" />
+              <div>
+                <h3>VAIBHAV SOLAR SOLUTIONS</h3>
+                <p>Solar System Quotation</p>
+                <small id="quoteMeta"></small>
+              </div>
+            </div>
+          </div>
+          <div id="downloadContent"></div>
+        </article>
+        <div class="actions actions-center">
+          <button class="btn btn-secondary back-btn" type="button">Back</button>
+          <button class="btn btn-primary" id="downloadQuote" type="button">Download PDF </button>
+        </div>
+      </section>
+    </main>
+
+        <!-- Supporting explanation and trust sections begin here. -->
+    <section class="section container" id="process">
+      <h2>Our Quotation Process</h2>
+      <p>Get a detailed, customized solar quotation in just a few steps.</p>
+      <div class="grid-4">
+        <div class="card">
+          <i class="fas fa-user service-icon"></i>
+          <h3>1. Customer Details</h3>
+          <p>Provide your basic information and requirements.</p>
+        </div>
+        <div class="card">
+          <i class="fas fa-home service-icon"></i>
+          <h3>2. Site Assessment</h3>
+          <p>We evaluate your property for optimal solar setup.</p>
+        </div>
+        <div class="card">
+          <i class="fas fa-cogs service-icon"></i>
+          <h3>3. Equipment Selection</h3>
+          <p>Choose the best panels and inverters for your needs.</p>
+        </div>
+        <div class="card">
+          <i class="fas fa-file-alt service-icon"></i>
+          <h3>4. Final Quotation</h3>
+          <p>Receive a comprehensive quote with all details.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="testimonials">
+      <h2>What Our Customers Say</h2>
+      <div class="grid-3">
+        <div class="card testimonial">
+          <p>"Got a detailed quote in minutes. The process was smooth and professional."</p>
+          <cite>- Sunita Verma, Bhopal</cite>
+        </div>
+        <div class="card testimonial">
+          <p>"Clear breakdown of costs and subsidies. Helped me make an informed decision."</p>
+          <cite>- Ramesh Gupta, Raisen</cite>
+        </div>
+        <div class="card testimonial">
+          <p>"Excellent quotation tool. Saved time and got the best deal."</p>
+          <cite>- Kavita Singh, Gairatganj</cite>
+        </div>
+      </div>
+    </section>
+
+        <!-- Shared footer: keep structure aligned with the rest of the website. -->
+    <footer class="footer">
+      <div class="container footer-grid">
+        <div>
+          <h3>Vaibhav Solar Solutions</h3>
+          <p class="desc powered-by">Powered by Vaibhav Traders</p>
+          <p class="desc">Leading solar energy solutions provider committed to creating a sustainable future through innovative renewable energy technologies.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="services.html">Services</a>
+          <a href="contact.html">Contact</a>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <p>Residential Solar</p>
+          <p>Commercial Solar</p>
+          <p>Solar Maintenance</p>
+          <p>Energy Consultation</p>
+        </div>
+        <div>
+          <h4>Follow Us</h4>
+          <a href="https://www.facebook.com/share/1CnR9W1Eev/" class="social-icon" title="Facebook"><i class="fab fa-facebook"></i></a>
+          <a href="https://www.instagram.com/vaibhav_solarsolutions?igsh=MXhoeGNwNGdiZnhiOQ==" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <p class="copyright">© 2026 Vaibhav Solar Solutions. All rights reserved. | Powering a sustainable future with solar energy.</p>
+    </footer>
+
+    <script src="vendor/html2canvas.min.js"></script>
+    <script src="vendor/jspdf.umd.min.js"></script>
+    <script src="env-config.js"></script>
+    <script src="app-config.js"></script>
+    <script src="api-client.js"></script>
+    <script src="utils.js"></script>
+    <script src="script.js?v=16"></script>
+    <script src="nav.js"></script>
+  </body>
+</html>
+
+
+

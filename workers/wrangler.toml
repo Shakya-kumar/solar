@@ -1,0 +1,29 @@
+name = "solar-forms-worker"
+main = "worker.js"
+compatibility_date = "2026-05-12"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "*"
+RATE_LIMIT_REQUESTS = "30"
+APPS_SCRIPT_TIMEOUT_MS = "25000"
+
+# Standalone Worker mode is optional. Production Pages uses ../functions/api/[[path]].js.
+# Set this as a secret, not in this file:
+# wrangler secret put APPS_SCRIPT_URL
+#
+# Optional Turnstile:
+# wrangler secret put TURNSTILE_SECRET_KEY
+#
+# Optional durable edge rate limiting: bind a KV namespace named RATE_LIMIT_KV
+# in the Cloudflare dashboard or deployment environment.
+
+[env.production]
+name = "solar-forms-worker-production"
+workers_dev = false
+vars = { RATE_LIMIT_REQUESTS = "30", APPS_SCRIPT_TIMEOUT_MS = "25000" }
+
+[env.staging]
+name = "solar-forms-worker-staging"
+workers_dev = true
+vars = { ALLOWED_ORIGINS = "*", RATE_LIMIT_REQUESTS = "60", APPS_SCRIPT_TIMEOUT_MS = "25000" }

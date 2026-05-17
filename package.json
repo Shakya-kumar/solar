@@ -1,0 +1,14 @@
+{
+  "name": "vaibhav-solar-solutions-pages",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name vaibhav-solar-solutions"
+  },
+  "devDependencies": {
+    "wrangler": "^4.90.1"
+  }
+}

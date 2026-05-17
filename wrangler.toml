@@ -1,0 +1,8 @@
+name = "vaibhav-solar-solutions"
+compatibility_date = "2026-05-12"
+pages_build_output_dir = "dist"
+
+[vars]
+VSS_API_ENDPOINT = "/api/submit"
+RATE_LIMIT_REQUESTS = "30"
+APPS_SCRIPT_TIMEOUT_MS = "25000"
