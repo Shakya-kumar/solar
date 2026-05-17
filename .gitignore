@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .dev.vars
 node_modules/
 web/node_modules/
@@ -14,3 +15,7 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+=======
+.wrangler/
+*.log
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb

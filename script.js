@@ -8,7 +8,10 @@ const GST_RATE = 0.138;
 const QUOTE_STATE_STORAGE_KEY = "vaibhav_quotation_state";
 const QUOTE_PREFILL_STORAGE_KEY = "vaibhav_quote_prefill";
 const QUOTE_STATUS_ELEMENT_ID = "quoteStatusMessage";
+<<<<<<< HEAD
 let quoteSubmissionInProgress = false;
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 
 function getQuoteStatusContainer() {
   let container = document.getElementById(QUOTE_STATUS_ELEMENT_ID);
@@ -37,6 +40,7 @@ function setQuoteRetryStatus(message) {
   container.style.display = "flex";
 }
 
+<<<<<<< HEAD
 async function submitQuotePayload(payload) {
   if (!window.VSS_API?.submitLead) throw new Error("Submission module is not loaded.");
   return window.VSS_API.submitLead({
@@ -46,6 +50,79 @@ async function submitQuotePayload(payload) {
     pdfName: `vaibhav-quotation-${payload.quotationId || payload.quoteNo || "quote"}.pdf`,
     pdfStatus: "Downloaded"
   });
+=======
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbx6PeY1ywgHn7S81tBsOUvIqne2JIqpleEDywMrbEm55mw10MNM0poq8bxnI4c4SwCO/exec";
+const GOOGLE_SHEET_SAVE_RETRY_DELAY = 800;
+const GOOGLE_SHEET_SAVE_MAX_RETRIES = 2;
+const SENT_QUOTES = new Set();
+
+function buildSheetPayload(quotePayload) {
+  return {
+    type: "QUOTE",
+    quoteNo: quotePayload.quoteNo || `VSQ-${Date.now().toString().slice(-8)}`,
+    timestamp: new Date().toISOString(),
+    name: quotePayload.name || "-",
+    phone: quotePayload.phone || "-",
+    plantSize: quotePayload.plantLabel || `${quotePayload.plantKw || 0}kW`,
+    inverter: quotePayload.inverterName || "-",
+    panel: quotePayload.panelName || "-",
+    kit: quotePayload.kitName || "-",
+    totalCost: quotePayload.grossTotal || 0,
+    subsidy: quotePayload.subsidy || 0,
+    netPayable: quotePayload.netPayable || 0,
+    monthlyBill: quotePayload.monthlyBill || 0,
+    monthlySavings: quotePayload.monthlySavings || 0,
+    source: "quotation_page"
+  };
+}
+
+async function sendQuoteToSheet(quotePayload) {
+  const sheetData = buildSheetPayload(quotePayload);
+  if (SENT_QUOTES.has(sheetData.quoteNo)) {
+    console.info("Duplicate quote prevented:", sheetData.quoteNo);
+    return { status: "duplicate", quoteNo: sheetData.quoteNo };
+  }
+
+  console.log("[QUOTE] Sending payload:", sheetData);
+  
+  let lastError = null;
+  for (let attempt = 1; attempt <= GOOGLE_SHEET_SAVE_MAX_RETRIES; attempt += 1) {
+    try {
+      const response = await fetch(GOOGLE_SHEETS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sheetData)
+      });
+
+      if (!response.ok) {
+        const bodyText = await response.text().catch(() => "<no response body>");
+        throw new Error(`HTTP ${response.status}: ${bodyText}`);
+      }
+
+      const result = await response.json().catch(() => {
+        throw new Error("Invalid JSON response from server");
+      });
+
+      if (result.status === "success") {
+        SENT_QUOTES.add(sheetData.quoteNo);
+        console.log("[QUOTE] ✅ Saved:", result);
+        return result;
+      } else {
+        throw new Error(result.message || "Server returned error");
+      }
+    } catch (error) {
+      lastError = error;
+      console.warn(`[QUOTE] Attempt ${attempt} failed:`, error.message);
+      if (attempt < GOOGLE_SHEET_SAVE_MAX_RETRIES) {
+        await new Promise((resolve) => setTimeout(resolve, GOOGLE_SHEET_SAVE_RETRY_DELAY));
+      }
+    }
+  }
+
+  console.error("[QUOTE] All attempts failed. Final error:", lastError);
+  SENT_QUOTES.add(sheetData.quoteNo);
+  return { status: "error", message: lastError?.message, quoteNo: sheetData.quoteNo };
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 }
 
 // Updated all-in pricing (includes all other costs) per latest sheet.
@@ -143,6 +220,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+<<<<<<< HEAD
 /** True after the user changes quote data; blocks accidental navigation away from the wizard. */
 let quoteWizardDirty = false;
 /** True after PDF + server save succeeded — user may leave freely. */
@@ -161,6 +239,70 @@ function markQuoteFlowCompleted() {
 function resetQuoteFlowFlags() {
   quoteWizardDirty = false;
   quoteWizardCompleted = false;
+=======
+function markQuoteDirty() {}
+
+function getNavigationType() {
+  try {
+    const entry = performance.getEntriesByType?.("navigation")?.[0];
+    if (entry && typeof entry.type === "string") return entry.type;
+  } catch {
+    // Ignore browsers that do not expose navigation timing entries.
+  }
+  return "navigate";
+}
+
+function getHtml2Canvas() {
+  if (typeof html2canvas === "function") return html2canvas;
+  if (window.html2canvas && typeof window.html2canvas === "function") return window.html2canvas;
+  if (window.html2canvas && typeof window.html2canvas.default === "function") return window.html2canvas.default;
+  throw new Error("html2canvas library is not loaded.");
+}
+
+function getJsPDF() {
+  if (window.jspdf && typeof window.jspdf.jsPDF === "function") return window.jspdf.jsPDF;
+  if (window.jspdf && window.jspdf.default && typeof window.jspdf.default.jsPDF === "function") return window.jspdf.default.jsPDF;
+  if (typeof jsPDF === "function") return jsPDF;
+  if (window.jsPDF && typeof window.jsPDF === "function") return window.jsPDF;
+  throw new Error("jsPDF library is not loaded.");
+}
+
+function loadExternalScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      if (existing.dataset.loaded === "true" || existing.readyState === "complete") {
+        resolve();
+        return;
+      }
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Failed to load ${src}`)), { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function loadFirstAvailableScript(sources) {
+  let lastError = null;
+  for (const src of sources) {
+    try {
+      await loadExternalScript(src);
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("Unable to load PDF library.");
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 }
 
 async function ensurePdfLibraries() {
@@ -475,7 +617,10 @@ if (pages.length) {
   }
 
   async function downloadAndShareQuote() {
+<<<<<<< HEAD
     if (quoteSubmissionInProgress) return;
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     if (!customerNameEl.value || !customerPhoneEl.value) {
       setQuoteStatus("Please enter customer name and phone before downloading.", "error");
       return;
@@ -484,9 +629,12 @@ if (pages.length) {
       setQuoteStatus("Please complete equipment selection before downloading.", "error");
       return;
     }
+<<<<<<< HEAD
     quoteSubmissionInProgress = true;
     const downloadButton = document.getElementById("downloadQuote");
     if (downloadButton) downloadButton.disabled = true;
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     ensureQuoteMeta();
     const quotePayload = buildQuotePayload();
     setQuoteStatus("Generating your quotation PDF. Please wait...", "info");
@@ -494,13 +642,20 @@ if (pages.length) {
     let pdfBlob = null;
     try {
       pdfBlob = await generateQuotePdfBlobClientSide();
+<<<<<<< HEAD
     } catch {
+=======
+    } catch (clientErr) {
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
       try {
         pdfBlob = await generateQuotePdfBlobSimple(quotePayload);
       } catch (simpleErr) {
         setQuoteRetryStatus(`PDF generation failed: ${simpleErr.message}. Please try again.`);
+<<<<<<< HEAD
         quoteSubmissionInProgress = false;
         if (downloadButton) downloadButton.disabled = false;
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
         return;
       }
     }
@@ -515,6 +670,7 @@ if (pages.length) {
       downloadLink.remove();
       window.setTimeout(() => URL.revokeObjectURL(pdfUrl), 5000);
 
+<<<<<<< HEAD
       setQuoteStatus("PDF downloaded. Saving quotation to your records...", "info");
 
       await submitQuotePayload(quotePayload);
@@ -525,6 +681,20 @@ if (pages.length) {
     } finally {
       quoteSubmissionInProgress = false;
       if (downloadButton) downloadButton.disabled = false;
+=======
+      setQuoteStatus("Quotation downloaded. Saving quotation details to Google Sheets...", "info");
+      sendQuoteToSheet(quotePayload)
+        .then((result) => {
+          console.info("Google Sheets save result:", result);
+          setQuoteStatus("✅ Quotation downloaded successfully and saved to our database!", "success");
+        })
+        .catch((err) => {
+          console.error("Sheet save failed:", err);
+          setQuoteStatus("✅ Quotation downloaded successfully, but saving to Google Sheets failed. Please retry.", "warning");
+        });
+    } catch (err) {
+      setQuoteRetryStatus(`Download failed: ${err.message}. Please try again.`);
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     }
   }
 
@@ -583,18 +753,26 @@ if (pages.length) {
       if (panelOtherInput && state.panelCustom) panelOtherInput.value = state.panelCustom;
 
       syncSystemType();
+<<<<<<< HEAD
       if (appState.step > 1 || (state.customerName && String(state.customerName).trim())) {
         markQuoteDirty();
       }
       return true;
     } catch {
+=======
+      return true;
+    } catch (_e) {
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
       return false;
     }
   }
 
   function clearQuotationState() {
     sessionStorage.removeItem(QUOTE_STATE_STORAGE_KEY);
+<<<<<<< HEAD
     resetQuoteFlowFlags();
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   }
 
   function getKitAdjustment() {
@@ -743,7 +921,11 @@ if (pages.length) {
     plantOptions.innerHTML = plantData
       .map((item, idx) => {
         const selected = appState.plant && appState.plant.kw === item.kw;
+<<<<<<< HEAD
         return `<button type="button" class="select-card ${selected ? "selected" : ""}" data-key="plant" data-idx="${idx}">
+=======
+        return `<button class="select-card ${selected ? "selected" : ""}" data-key="plant" data-idx="${idx}">
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
           <strong>${item.label}</strong><span>Solar Plant</span></button>`;
       })
       .join("");
@@ -985,13 +1167,17 @@ if (pages.length) {
   function saveStepHtml() {
     const q = calculateQuote();
     if (!q) return "<p>Please complete all previous steps.</p>";
+<<<<<<< HEAD
     const locationLine = [customerLocationEl.value?.trim(), appState.city, appState.stateName].filter(Boolean).join(" · ") || "—";
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     return `
       <div class="quote-customer">
         <h4>Quotation Ready</h4>
         <p>Your quotation has been prepared in invoice format and is ready for download.</p>
         <p>Use the button below to download the PDF and send the quotation details directly to our team.</p>
       </div>
+<<<<<<< HEAD
       <div class="quote-top-grid quote-top-grid--summary">
         <div class="mini-card"><span>Quotation ID</span><strong>${escapeHtml(appState.quoteNo || "-")}</strong></div>
         <div class="mini-card"><span>Customer</span><strong>${escapeHtml(customerNameEl.value || "-")}</strong></div>
@@ -1002,6 +1188,12 @@ if (pages.length) {
         <div class="mini-card"><span>Monthly electricity bill</span><strong>Rs. ${formatINR(appState.monthlyBill || 0)}</strong></div>
         <div class="mini-card"><span>Plant size</span><strong>${escapeHtml(appState.plant?.label || "-")}</strong></div>
         <div class="mini-card"><span>Equipment</span><strong>${escapeHtml(appState.systemType || "-")}</strong></div>
+=======
+      <div class="quote-top-grid">
+        <div class="mini-card"><span>Quotation ID</span><strong>${escapeHtml(appState.quoteNo || "-")}</strong></div>
+        <div class="mini-card"><span>Customer</span><strong>${escapeHtml(customerNameEl.value || "-")}</strong></div>
+        <div class="mini-card"><span>Plant</span><strong>${escapeHtml(appState.plant?.label || "-")}</strong></div>
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
         <div class="mini-card net-payable-card"><span>Net Payable</span><strong>Rs. ${formatINR(q.final_price)}</strong></div>
       </div>
     `;
@@ -1009,6 +1201,7 @@ if (pages.length) {
 
   function buildQuotePayload() {
     const q = calculateQuote();
+<<<<<<< HEAD
     const dateTime = new Date().toLocaleString("en-IN");
     return {
       quotationId: appState.quoteNo,
@@ -1038,6 +1231,55 @@ if (pages.length) {
       subsidy: q?.subsidy || 0,
       netPayable: q?.final_price || q?.netPayable || 0,
       timestamp: new Date().toISOString()
+=======
+    return {
+      quoteNo: appState.quoteNo,
+      date: getQuoteTimestamp(),
+      name: customerNameEl.value,
+      phone: customerPhoneEl.value,
+      email: customerEmailEl.value,
+      location: customerLocationEl.value || `${appState.city || ""}, ${appState.stateName || ""}`,
+      city: appState.city,
+      stateName: appState.stateName,
+      propertyType: appState.propertyType,
+      monthlyBill: appState.monthlyBill,
+      plantKw: appState.plant?.kw || 0,
+      plantLabel: appState.plant?.label || "",
+      plantBase: q?.subtotal || 0,
+      kitName: appState.kit?.name || "",
+      kitPriceAdjustment: getKitAdjustment(),
+      kitLogo: appState.kit?.logo || "",
+      panelName: getSelectedPanelName(),
+      panelWarranty: appState.kit?.warranty || appState.panel?.warranty || "",
+      panelPrice: q?.panel_cost || 0,
+      panelLogo: getSelectedPanelLogo(),
+      inverterName: getSelectedInverterName(),
+      inverterWarranty: appState.kit?.warranty || appState.inverter?.warranty || "",
+      inverterPrice: q?.inverter_cost || 0,
+      inverterLogo: getSelectedInverterLogo(),
+      installationCost: q?.installation_cost || 0,
+      transport: q?.transport || 0,
+      earthing: q?.earthing || 0,
+      acdb: q?.acdb || 0,
+      netMetering: q?.netMetering || 0,
+      wiring: q?.wiring || 0,
+      subtotal: q?.subtotal || 0,
+      gst: q?.gst || 0,
+      total_before_subsidy: q?.total_before_subsidy || 0,
+      adjusted_total: q?.adjusted_total || 0,
+      grossTotal: q?.adjusted_total || 0,
+      subsidy: q?.subsidy || 0,
+      final_price: q?.final_price || 0,
+      price_per_kw: q?.price_per_kw || 0,
+      netPayable: q?.final_price || 0,
+      systemType: appState.systemType,
+      annualInterestRate: q?.annualInterestRate || 0,
+      emi: q?.emi || 0,
+      monthlySavings: q?.monthlySavings || 0,
+      annualSavings: q?.annualSavings || 0,
+      paybackYears: q?.paybackYears || 0,
+      source: "quotation_page"
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     };
   }
 
@@ -1057,7 +1299,11 @@ if (pages.length) {
     }
 
     try {
+<<<<<<< HEAD
       const savedPrefill = JSON.parse(sessionStorage.getItem(QUOTE_PREFILL_STORAGE_KEY) || "null");
+=======
+      const savedPrefill = JSON.parse(localStorage.getItem(QUOTE_PREFILL_STORAGE_KEY) || "null");
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
       if (savedPrefill && typeof savedPrefill === "object") {
         if (!customerNameEl.value && savedPrefill.customerName) customerNameEl.value = savedPrefill.customerName;
         if (!customerPhoneEl.value && savedPrefill.customerPhone) customerPhoneEl.value = savedPrefill.customerPhone;
@@ -1069,10 +1315,17 @@ if (pages.length) {
         if (!propertyTypeEl.value && savedPrefill.propertyType) propertyTypeEl.value = savedPrefill.propertyType;
         prefillApplied = true;
       }
+<<<<<<< HEAD
     } catch {
     } finally {
       // Quote prefill should only apply for the immediate ROI -> Quote redirect.
       sessionStorage.removeItem(QUOTE_PREFILL_STORAGE_KEY);
+=======
+    } catch (_error) {
+    } finally {
+      // Quote prefill should only apply for the immediate ROI -> Quote redirect.
+      localStorage.removeItem(QUOTE_PREFILL_STORAGE_KEY);
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     }
 
     return prefillApplied;
@@ -1111,6 +1364,7 @@ if (pages.length) {
     field.insertAdjacentElement("afterend", error);
   }
 
+<<<<<<< HEAD
   function fieldValue(field) {
     return String(field?.value || "").trim();
   }
@@ -1142,6 +1396,8 @@ if (pages.length) {
     return true;
   }
 
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   function ensureQuoteMeta() {
     if (!appState.quoteNo) appState.quoteNo = `VSQ-${Date.now().toString().slice(-8)}`;
     if (!appState.generatedAt) appState.generatedAt = new Date().toISOString();
@@ -1272,7 +1528,18 @@ if (pages.length) {
   }
 
   document.getElementById("toStep2").addEventListener("click", () => {
+<<<<<<< HEAD
     if (!validateStepOne()) return;
+=======
+    const bill = Number(monthlyBillEl.value);
+    setFieldError("customerName", !customerNameEl.value ? "Name is required." : "");
+    setFieldError("customerPhone", !customerPhoneEl.value ? "Phone is required." : "");
+    setFieldError("customerLocation", !customerLocationEl.value ? "Address is required." : "");
+    setFieldError("wizardMonthlyBill", (!bill || bill < 500) ? "Please enter valid monthly bill (minimum 500)." : "");
+    setFieldError("wizardState", !stateEl.value ? "State is required." : "");
+    setFieldError("propertyType", !propertyTypeEl.value ? "Property type is required." : "");
+    if (!customerNameEl.value || !customerPhoneEl.value || !customerLocationEl.value || !bill || bill < 500 || !stateEl.value || !propertyTypeEl.value) return;
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     syncAppStateFromInputs();
     markQuoteDirty();
     saveQuotationState();
@@ -1285,6 +1552,7 @@ if (pages.length) {
 
   document.querySelectorAll(".back-btn").forEach((btn) => btn.addEventListener("click", () => showStep(Math.max(1, appState.step - 1))));
 
+<<<<<<< HEAD
   plantOptions?.addEventListener("click", (event) => {
     const plantTarget = event.target.closest(".select-card");
     if (!plantTarget) return;
@@ -1307,6 +1575,11 @@ if (pages.length) {
 
   document.addEventListener("click", (event) => {
     const retryQuotePdf = event.target.closest("[data-retry-quote-pdf]");
+=======
+  document.addEventListener("click", (event) => {
+    const retryQuotePdf = event.target.closest("[data-retry-quote-pdf]");
+    const plantTarget = event.target.closest(".select-card");
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     const trigger = event.target.closest(".brand-select-trigger");
     const option = event.target.closest(".brand-option");
 
@@ -1334,6 +1607,18 @@ if (pages.length) {
       return;
     }
 
+<<<<<<< HEAD
+=======
+    if (plantTarget) {
+      appState.plant = plantData[Number(plantTarget.dataset.idx)];
+      syncSystemType();
+      markQuoteDirty();
+      renderPlants();
+      showStep(3);
+      return;
+    }
+
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     if (!event.target.closest(".brand-select")) {
       closeAllBrandMenus();
     }
@@ -1369,6 +1654,7 @@ if (pages.length) {
   });
 
   const stateRestored = initQuotationStateRestore();
+<<<<<<< HEAD
   window.addEventListener("beforeunload", (e) => {
     saveQuotationState();
     if (quoteWizardDirty && !quoteWizardCompleted) {
@@ -1407,6 +1693,11 @@ if (pages.length) {
     },
     true
   );
+=======
+  window.addEventListener("beforeunload", () => {
+    saveQuotationState();
+  });
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   
   renderPlants();
   renderEquipmentSelectors();

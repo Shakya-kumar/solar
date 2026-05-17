@@ -17,7 +17,14 @@ const roiReportMeta = document.getElementById("roiReportMeta");
 const QUOTE_PREFILL_STORAGE_KEY = "vaibhav_quote_prefill";
 const ROI_STATE_STORAGE_KEY = "vaibhav_roi_state";
 const ROI_STATUS_ELEMENT_ID = "roiStatusMessage";
+<<<<<<< HEAD
 let roiSubmissionInProgress = false;
+=======
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbx6PeY1ywgHn7S81tBsOUvIqne2JIqpleEDywMrbEm55mw10MNM0poq8bxnI4c4SwCO/exec";
+const GOOGLE_SHEETS_MAX_RETRIES = 2;
+const GOOGLE_SHEETS_RETRY_DELAY_MS = 800;
+const SENT_ROI_REPORTS = new Set();
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 
 function getStatusContainer() {
   let container = document.getElementById(ROI_STATUS_ELEMENT_ID);
@@ -79,16 +86,92 @@ const INDIA_STATES = [
 
 let lastRoiData = null;
 
+<<<<<<< HEAD
+=======
+function getNavigationType() {
+  try {
+    const entry = performance.getEntriesByType?.("navigation")?.[0];
+    if (entry && typeof entry.type === "string") return entry.type;
+  } catch {
+    // Ignore environments where navigation timing is unavailable.
+  }
+  return "navigate";
+}
+
+function getHtml2Canvas() {
+  if (typeof html2canvas === "function") return html2canvas;
+  if (window.html2canvas && typeof window.html2canvas === "function") return window.html2canvas;
+  if (window.html2canvas && typeof window.html2canvas.default === "function") return window.html2canvas.default;
+  throw new Error("html2canvas library is not loaded.");
+}
+
+function getJsPDF() {
+  if (window.jspdf && typeof window.jspdf.jsPDF === "function") return window.jspdf.jsPDF;
+  if (window.jspdf && window.jspdf.default && typeof window.jspdf.default.jsPDF === "function") return window.jspdf.default.jsPDF;
+  if (typeof jsPDF === "function") return jsPDF;
+  if (window.jsPDF && typeof window.jsPDF === "function") return window.jsPDF;
+  throw new Error("jsPDF library is not loaded.");
+}
+
+function loadExternalScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      if (existing.dataset.loaded === "true" || existing.readyState === "complete") {
+        resolve();
+        return;
+      }
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error(`Unable to load ${src}`)), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+    script.onerror = () => reject(new Error(`Unable to load ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function loadFirstAvailableScript(sources) {
+  let lastError = null;
+  for (const src of sources) {
+    try {
+      await loadExternalScript(src);
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("Unable to load PDF library.");
+}
+
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 async function ensurePdfLibraries() {
   try {
     getHtml2Canvas();
     getJsPDF();
     return;
   } catch {
+<<<<<<< HEAD
     // Load missing libraries from local assets first, then CDN fallback locations.
   }
 
   if (!window.html2canvas || typeof window.html2canvas !== "function") {
+=======
+    // Load missing browser PDF libraries when the page-level CDN script is unavailable.
+  }
+
+  try {
+    getHtml2Canvas();
+  } catch {
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     await loadFirstAvailableScript([
       "vendor/html2canvas.min.js",
       "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js",
@@ -96,7 +179,13 @@ async function ensurePdfLibraries() {
     ]);
   }
 
+<<<<<<< HEAD
   if (!window.jspdf || !window.jspdf.jsPDF) {
+=======
+  try {
+    getJsPDF();
+  } catch {
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     await loadFirstAvailableScript([
       "vendor/jspdf.umd.min.js",
       "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
@@ -358,12 +447,32 @@ function buildRoiMetrics() {
   };
 }
 
+<<<<<<< HEAD
 async function submitRoiPayload(payload) {
   if (!window.VSS_API?.submitLead) throw new Error("Submission module is not loaded.");
   return window.VSS_API.submitLead({
     type: "roi",
     sourcePage: "ROI Calculator",
     roi: payload
+=======
+async function sendRoiEmail(data, action = "ROI Report") {
+  if (typeof sendEmail !== "function") {
+    throw new Error("Email service is not available.");
+  }
+
+  return sendEmail({
+    type: "roi",
+    source: "roi_page",
+    actionType: action,
+    name: data.customerName,
+    phone: data.customerPhone,
+    email: "",
+    location: data.location,
+    address: data.customerAddress,
+    message: `ROI report generated for ${data.customerName}`,
+    roi: data,
+    timestamp: new Date().toISOString()
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   });
 }
 
@@ -468,7 +577,11 @@ async function generateRoiPdfBlobSimple(data) {
 async function generateRoiPdfBlob(data) {
   try {
     return await generateRoiPdfBlobClientSide(data);
+<<<<<<< HEAD
   } catch {
+=======
+  } catch (_clientErr) {
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     return generateRoiPdfBlobSimple(data);
   }
 }
@@ -484,16 +597,97 @@ function downloadPdfBlob(pdfBlob, filename) {
   window.setTimeout(() => URL.revokeObjectURL(pdfUrl), 5000);
 }
 
+<<<<<<< HEAD
 async function downloadShareAndEmailRoi(data, stage, { redirectToQuote = false } = {}) {
   if (!data) return false;
   if (roiSubmissionInProgress) return false;
   roiSubmissionInProgress = true;
   document.getElementById("downloadRoiBtn")?.setAttribute("disabled", "disabled");
   document.getElementById("getQuoteBtn")?.setAttribute("disabled", "disabled");
+=======
+function buildRoiSheetPayload(data) {
+  return {
+    type: "ROI",
+    reportId: data.reportId,
+    timestamp: data.generatedAt,
+    customerName: data.customerName,
+    customerPhone: data.customerPhone,
+    customerAddress: data.customerAddress,
+    location: data.location,
+    roofType: data.roofType,
+    connectionType: data.connectionType,
+    recommendedKw: data.recommendedKw,
+    plantLabel: data.plantLabel,
+    baseCost: data.baseCost,
+    subsidy: data.subsidy,
+    netCost: data.netCost,
+    monthlySavings: data.monthlySavings,
+    annualSavings: data.annualSavings,
+    paybackYears: data.paybackYears,
+    source: "roi_page"
+  };
+}
+
+async function sendRoiToSheet(data) {
+  if (!data || !data.reportId) {
+    throw new Error("Missing ROI report data for sheet save.");
+  }
+
+  if (SENT_ROI_REPORTS.has(data.reportId)) {
+    console.info("Duplicate ROI report prevented:", data.reportId);
+    return { status: "duplicate", reportId: data.reportId };
+  }
+
+  const payload = buildRoiSheetPayload(data);
+  console.log("[ROI] Sending payload:", payload);
+
+  let lastError = null;
+  for (let attempt = 1; attempt <= GOOGLE_SHEETS_MAX_RETRIES; attempt += 1) {
+    try {
+      const response = await fetch(GOOGLE_SHEETS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const bodyText = await response.text().catch(() => "<no response body>");
+        throw new Error(`HTTP ${response.status}: ${bodyText}`);
+      }
+
+      const result = await response.json().catch(() => {
+        throw new Error("Invalid JSON response from server");
+      });
+
+      if (result.status === "success") {
+        SENT_ROI_REPORTS.add(data.reportId);
+        console.log("[ROI] ✅ Saved:", result);
+        return result;
+      } else {
+        throw new Error(result.message || "Server returned error");
+      }
+    } catch (error) {
+      lastError = error;
+      console.warn(`[ROI] Attempt ${attempt} failed:`, error.message);
+      if (attempt < GOOGLE_SHEETS_MAX_RETRIES) {
+        await new Promise((resolve) => setTimeout(resolve, GOOGLE_SHEETS_RETRY_DELAY_MS));
+      }
+    }
+  }
+
+  console.error("[ROI] All attempts failed. Final error:", lastError);
+  SENT_ROI_REPORTS.add(data.reportId);
+  return { status: "error", message: lastError?.message, reportId: data.reportId };
+}
+
+async function downloadShareAndEmailRoi(data, stage, { redirectToQuote = false } = {}) {
+  if (!data) return false;
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   roiReportMeta.textContent = `Report ID: ${data.reportId} | ${new Date(data.generatedAt).toLocaleString("en-IN")}`;
   roiDownloadContent.innerHTML = roiDownloadHtml(data);
   saveRoiState();
 
+<<<<<<< HEAD
   try {
     const pdfBlob = await generateRoiPdfBlob(data);
     downloadPdfBlob(pdfBlob, `vaibhav-roi-report-${data.reportId}.pdf`);
@@ -503,6 +697,25 @@ async function downloadShareAndEmailRoi(data, stage, { redirectToQuote = false }
     } catch (submissionError) {
       setRoiStatus(`ROI report downloaded, but saving failed: ${submissionError.message}. Please contact us directly.`, "warning");
       return false;
+=======
+  let sheetSaved = false;
+  setRoiStatus("Saving ROI details to Google Sheets...", "info");
+  try {
+    await sendRoiToSheet(data);
+    sheetSaved = true;
+  } catch (sheetError) {
+    console.warn("ROI sheet save failed:", sheetError);
+  }
+
+  try {
+    const pdfBlob = await generateRoiPdfBlob(data);
+    downloadPdfBlob(pdfBlob, `vaibhav-roi-report-${data.reportId}.pdf`);
+
+    if (sheetSaved) {
+      setRoiStatus("ROI report downloaded and saved to Google Sheets.", "success");
+    } else {
+      setRoiStatus("ROI report downloaded, but saving to Google Sheets failed. Please try again.", "warning");
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     }
 
     if (redirectToQuote) {
@@ -516,10 +729,13 @@ async function downloadShareAndEmailRoi(data, stage, { redirectToQuote = false }
     alert(`ROI PDF download failed: ${err.message}. Please try again later.`);
     setRoiStatus(`ROI PDF download failed: ${err.message}`, "error");
     return false;
+<<<<<<< HEAD
   } finally {
     roiSubmissionInProgress = false;
     document.getElementById("downloadRoiBtn")?.removeAttribute("disabled");
     document.getElementById("getQuoteBtn")?.removeAttribute("disabled");
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   }
 }
 
@@ -604,7 +820,20 @@ function renderRoiResult(data) {
   document.getElementById("getQuoteBtn")?.addEventListener("click", async () => {
     saveQuotePrefill(data);
     saveRoiState();
+<<<<<<< HEAD
     await downloadShareAndEmailRoi(data, "ROI Generated - Quote Requested", { redirectToQuote: true });
+=======
+    if (typeof sendEmail === "function") {
+      setRoiStatus("Sending ROI details to our team before redirecting...", "info");
+      try {
+        await sendRoiEmail(data, "ROI Data for Quote");
+        setRoiStatus("ROI details sent. Redirecting to quotation page...", "success");
+      } catch {
+        setRoiStatus("ROI details could not be emailed. Redirecting anyway.", "warning");
+      }
+    }
+    window.location.href = `quotation.html?bill=${data.bill}&state=${encodeURIComponent(data.location)}`;
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   });
 }
 
@@ -618,7 +847,11 @@ async function renderRoi() {
 
   renderRoiResult(data);
   saveRoiState();
+<<<<<<< HEAD
   setRoiStatus("ROI calculated successfully. Use the download button below to get the report.", "success");
+=======
+  setRoiStatus("ROI calculated successfully.", "success");
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 }
 
 async function downloadRoiReport() {
@@ -646,7 +879,11 @@ function saveRoiState() {
     result: lastRoiData,
     timestamp: Date.now()
   };
+<<<<<<< HEAD
   sessionStorage.setItem(ROI_STATE_STORAGE_KEY, JSON.stringify(state));
+=======
+  localStorage.setItem(ROI_STATE_STORAGE_KEY, JSON.stringify(state));
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 }
 
 function saveQuotePrefill(data) {
@@ -660,11 +897,19 @@ function saveQuotePrefill(data) {
     city: "",
     propertyType: ""
   };
+<<<<<<< HEAD
   sessionStorage.setItem(QUOTE_PREFILL_STORAGE_KEY, JSON.stringify(prefill));
 }
 
 function loadRoiState() {
   const saved = sessionStorage.getItem(ROI_STATE_STORAGE_KEY);
+=======
+  localStorage.setItem(QUOTE_PREFILL_STORAGE_KEY, JSON.stringify(prefill));
+}
+
+function loadRoiState() {
+  const saved = localStorage.getItem(ROI_STATE_STORAGE_KEY);
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   if (!saved) return false;
   
   try {
@@ -686,13 +931,22 @@ function loadRoiState() {
     }
 
     return true;
+<<<<<<< HEAD
   } catch {
+=======
+  } catch (e) {
+    console.error("Error loading ROI state:", e);
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
     return false;
   }
 }
 
 function clearRoiState() {
+<<<<<<< HEAD
   sessionStorage.removeItem(ROI_STATE_STORAGE_KEY);
+=======
+  localStorage.removeItem(ROI_STATE_STORAGE_KEY);
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
   lastRoiData = null;
 }
 

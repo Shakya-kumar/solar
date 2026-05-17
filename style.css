@@ -530,7 +530,10 @@ summary { cursor: pointer; font-weight: 600; }
 .select-card span, .select-card small { color:var(--muted); font-size: 0.8rem; }
 
 .quote-top-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; }
+<<<<<<< HEAD
 .quote-top-grid--summary { grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); }
+=======
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 .mini-card { border: 1px solid rgba(16, 138, 53, 0.18); border-radius:8px; padding:12px; background: #fff; position: relative; box-shadow: var(--shadow-sm); }
 .mini-card span { display:block; color:var(--muted); font-size:.82rem; }
 .mini-card strong { color: var(--green); }
@@ -1151,6 +1154,7 @@ summary { cursor: pointer; font-weight: 600; }
 .why-list li, .focus-list li { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
 .why-list li i, .focus-list li i { margin-top: 2px; color: var(--green); }
 
+<<<<<<< HEAD
 .project-icon {
   font-size: 3rem;
   color: var(--green);
@@ -1158,6 +1162,15 @@ summary { cursor: pointer; font-weight: 600; }
   margin-bottom: 15px;
 }
 .project-card h3 { margin-top: 0; }
+=======
+.project-card img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.project-card h3 { margin-top: 15px; }
+>>>>>>> 81f5cb3012d451a619506ecba522b329391da7eb
 .project-link { text-decoration: none; color: inherit; display: block; }
 
 .brand-grid, .registration-grid {
